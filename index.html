@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Serajia Milk Shop - Khata Book</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: auto; padding: 20px; }
+    input, button, select { margin: 5px 0; padding: 8px; width: 100%; }
+    h1, h2 { text-align: center; }
+    .user-list a { display: block; padding: 8px; border: 1px solid #ccc; margin: 5px 0; text-decoration: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    td, th { border: 1px solid #aaa; padding: 5px; text-align: center; }
+    .back { margin-top: 20px; display: block; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1>🧾 Serajia Milk Shop - Khata Book</h1>
+  <div id="home">
+    <h2>Add New Customer</h2>
+    <input id="newCustomer" placeholder="Enter Customer Name">
+    <button onclick="addCustomer()">Add</button>
+
+    <h2>All Customers</h2>
+    <div class="user-list" id="customerList"></div>
+  </div>
+
+  <div id="userPage" style="display:none;">
+    <h2 id="userHeading"></h2>
+    <input type="date" id="date"><br>
+    Milk (liters): <input type="number" id="milk"><br>
+    Yogurt (kg): <input type="number" id="yogurt"><br>
+    Eggs: <input type="number" id="eggs"><br>
+
+    <h3>Biscuits</h3>
+    ₹40: <input type="number" id="bis40">
+    ₹20: <input type="number" id="bis20">
+    ₹10: <input type="number" id="bis10">
+
+    <h3>Bread</h3>
+    ₹60: <input type="number" id="br60">
+    ₹45: <input type="number" id="br45">
+    ₹40: <input type="number" id="br40">
+
+    <h3>Tea</h3>
+    ₹70: <input type="number" id="t70">
+    ₹100: <input type="number" id="t100">
+    ₹60: <input type="number" id="t60"><br><br>
+
+    <button onclick="addEntry()">Add Entry</button>
+
+    <h3>Previous Entries</h3>
+    <table id="entryTable">
+      <tr><th>Date</th><th>Total (₹)</th></tr>
+    </table>
+
+    <a class="back" href="#" onclick="goHome()">⬅ Back to Home</a>
+  </div>
+
+  <script>
+    let customers = JSON.parse(localStorage.getItem('khataCustomers') || '{}');
+    let currentCustomer = '';
+
+    function save() {
+      localStorage.setItem('khataCustomers', JSON.stringify(customers));
+    }
+
+    function showCustomers() {
+      let list = document.getElementById('customerList');
+      list.innerHTML = '';
+      for (let name in customers) {
+        let a = document.createElement('a');
+        a.href = '#';
+        a.textContent = name;
+        a.onclick = () => openCustomer(name);
+        list.appendChild(a);
+      }
+    }
+
+    function addCustomer() {
+      let name = document.getElementById('newCustomer').value.trim();
+      if (name && !customers[name]) {
+        customers[name] = [];
+        save();
+        showCustomers();
+        document.getElementById('newCustomer').value = '';
+      }
+    }
+
+    function openCustomer(name) {
+      currentCustomer = name;
+      document.getElementById('userHeading').innerText = name + "'s Khata";
+      document.getElementById('home').style.display = 'none';
+      document.getElementById('userPage').style.display = 'block';
+      updateTable();
+    }
+
+    function goHome() {
+      document.getElementById('home').style.display = 'block';
+      document.getElementById('userPage').style.display = 'none';
+    }
+
+    function addEntry() {
+      const e = (id) => parseFloat(document.getElementById(id).value) || 0;
+      const entry = {
+        date: document.getElementById('date').value,
+        milk: e('milk'),
+        yogurt: e('yogurt'),
+        eggs: e('eggs'),
+        bis40: e('bis40'),
+        bis20: e('bis20'),
+        bis10: e('bis10'),
+        br60: e('br60'),
+        br45: e('br45'),
+        br40: e('br40'),
+        t70: e('t70'),
+        t100: e('t100'),
+        t60: e('t60'),
+      };
+
+      entry.total = 
+        entry.milk * 130 +
+        entry.yogurt * 100 +
+        entry.eggs * 15 +
+        entry.bis40 * 40 +
+        entry.bis20 * 20 +
+        entry.bis10 * 10 +
+        entry.br60 * 60 +
+        entry.br45 * 45 +
+        entry.br40 * 40 +
+        entry.t70 * 70 +
+        entry.t100 * 100 +
+        entry.t60 * 60;
+
+      customers[currentCustomer].push(entry);
+      save();
+      updateTable();
+
+      // Clear form
+      document.querySelectorAll('#userPage input').forEach(i => i.value = '');
+    }
+
+    function updateTable() {
+      let table = document.getElementById('entryTable');
+      table.innerHTML = '<tr><th>Date</th><th>Total (₹)</th></tr>';
+      customers[currentCustomer].forEach(e => {
+        let row = table.insertRow();
+        row.insertCell().innerText = e.date;
+        row.insertCell().innerText = e.total.toFixed(0);
+      });
+    }
+
+    showCustomers();
+  </script>
+</body>
+</html>
